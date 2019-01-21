@@ -28,18 +28,39 @@ def acceptdialog(request):
 
 
         if intent == 'Start':
-
-            return JsonResponse({"fulfillmentText": "Are you ready to sail the ocean or explore the island?"})
+             sessionlist= UserSessionData.objects.values_list('session')
+             if sessionid not in sessionlist:
+                 newrow = UserSessionData(session=sessionid,loottotal=10, crewtotal=10, reknown= 5)
+                 newrow.save()
+             return JsonResponse({"fulfillmentText": "Are you ready to launch the ship or explore the island?"})
 
         if intent == 'Sail':
-            rndnum = randint(0, 4)
+            rndnum = randint(0, 33)
             testingQuery=RandomEncountersSea.objects.values_list('desc','resp', named=True)
             print(testingQuery[rndnum].resp)
             testingjsonify=testingQuery[rndnum].resp
-            return JsonResponse({"fulfillmentText": testingjsonify})
+            return JsonResponse({"fulfillmentText": testingjsonify + "say sail again to continue your journey."})
+
+        if intent == "SailFinal":
+            rndnum = randint(0, 22)
+            testingQuery=RandomEncountersSea.objects.values_list('desc','resp', named=True)
+            print(testingQuery[rndnum].resp)
+            testingjsonify=testingQuery[rndnum].resp
+
+            rndisl= randint(0,25)
+            islandvalues= IslandGenerator.objects.values_list('resp', named = True)
+            islandname= islandvalues[rndisl].resp
+            print(islandname)
+            finalJsonRrespons=testingjsonify+islandname
+            print(finalJsonRrespons)
+
+            print({"fulfillmentText": finalJsonRrespons})
+            return JsonResponse({"fulfillmentText": finalJsonRrespons})
+
+
 
         if intent == 'Explore':
-            rndnum = randint(0, 3)
+            rndnum = randint(0, 20)
             testingQuery = RandomEncountersLand.objects.values_list('desc', 'resp', 'loottrg', named=True)
             # DEBUG on Console
             print(testingQuery[rndnum].resp)
@@ -49,16 +70,19 @@ def acceptdialog(request):
             testingjsonify = testingQuery[rndnum].resp
 
             if loottrgactive == True:
-                rndnum2=randint(0,3)
-                lootTableResult=RandomLootSmall.objects.values_list('resp','lootvalue', named=True)
+                rndnum2=randint(0,20)
+                lootTableResult=RandomLootSmall.objects.values_list('resp', named=True)
+                # lootvaluetotal= lootTableResult[rndnum2].lootvalue
+                # print(lootvaluetotal)
                 lootResp= lootTableResult[rndnum2].resp
-                # UserSessionData.objects.filter(session=??)=+lootvalue
+                # newloot = UserSessionData(session=sessionid, loottotal =+ lootvaluetotal)
+                # newloot.save()
                 finalresponse = testingjsonify +'. ' + lootResp
                 return JsonResponse({"fulfillmentText": finalresponse})
 
             return JsonResponse({"fulfillmentText": testingjsonify})
 
-        # if context == "getisland":
+        #if context == "getisland":
             rndisl= randint(0,24)
             islandvalues= IslandGenerator.objects.values_list('resp', named = True)
             islandname= islandvalues[rndisl].resp
